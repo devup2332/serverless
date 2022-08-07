@@ -1,0 +1,55 @@
+service: aws-node # NOTE: update this with your service name
+
+frameworkVersion: "3"
+
+provider:
+  name: aws
+  runtime: nodejs14.x
+  profile: serverless 
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:*
+      Resource: 
+        - arn:aws:dynamodb:us-east-1:642638467990:table/TaskTable
+
+functions:
+  hello:
+    name: hello 
+    handler: src/hello.hello
+    events:
+      - httpApi:
+          path: /hello/{name}
+          method: GET
+  addTask:
+    name: addTask 
+    handler: src/createTask.addTask
+    events:
+      - httpApi:
+          path: /createTask
+          method: POST 
+  getTasks:
+    name: getTasks 
+    handler: src/getTasks.getTasks
+    events:
+      - httpApi:
+          path: /getTasks
+          method: GET 
+
+resources:
+  Resources:
+    TaskTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: TaskTable
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH 
+
+plugins:
+  - serverless-esbuild
+  - serverless-offline
